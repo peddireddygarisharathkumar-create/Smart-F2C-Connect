@@ -1,0 +1,90 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Add Product{% endblock %}
+
+{% block sidebar %}
+<ul class="sidebar-nav">
+  <li><a href="{{ url_for('farmer_dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a></li>
+  <li><a href="{{ url_for('farmer_products') }}"><span class="nav-icon">🌾</span> My Products</a></li>
+  <li><a href="{{ url_for('farmer_add_product') }}"><span class="nav-icon">➕</span> Add Product</a></li>
+  <li><a href="{{ url_for('farmer_orders') }}"><span class="nav-icon">📦</span> Orders</a></li>
+  <li><a href="{{ url_for('logout') }}"><span class="nav-icon">🚪</span> Logout</a></li>
+</ul>
+{% endblock %}
+
+{% block main %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('farmer_dashboard') }}">Dashboard</a> / <a href="{{ url_for('farmer_products') }}">Products</a> / Add</div>
+  <h1>Add New Product</h1>
+</div>
+
+<div style="max-width:700px">
+  <div class="card card-body">
+    <form action="{{ url_for('farmer_add_product') }}" method="POST" enctype="multipart/form-data">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Product Name *</label>
+          <input class="form-control" type="text" name="name" placeholder="e.g. Fresh Tomatoes" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-control form-select" name="category" required>
+            <option value="">Select category</option>
+            <option>Vegetables</option>
+            <option>Fruits</option>
+            <option>Grains</option>
+            <option>Pulses</option>
+            <option>Spices</option>
+            <option>Dairy</option>
+            <option>Nuts</option>
+            <option>Herbs</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Price per Unit (₹) *</label>
+          <input class="form-control" type="number" name="price" step="0.01" min="0" placeholder="e.g. 45.00" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Available Quantity *</label>
+          <input class="form-control" type="number" name="quantity" min="0" placeholder="e.g. 100" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Unit *</label>
+          <select class="form-control form-select" name="unit" required>
+            <option value="kg">Kilogram (kg)</option>
+            <option value="g">Gram (g)</option>
+            <option value="litre">Litre (L)</option>
+            <option value="piece">Piece</option>
+            <option value="dozen">Dozen</option>
+            <option value="bunch">Bunch</option>
+            <option value="packet">Packet</option>
+            <option value="quintal">Quintal</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" name="description" rows="3" placeholder="Describe your product – freshness, variety, growing method..."></textarea>
+        </div>
+
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Product Image</label>
+          <input class="form-control" type="file" name="image" id="productImage" accept="image/*">
+          <div class="form-hint">Recommended: 600×400px, JPG/PNG, max 2MB</div>
+          <img id="imgPreview" src="" alt="Preview" style="display:none;margin-top:.75rem;max-height:180px;border-radius:var(--radius-md);object-fit:cover">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:1rem;margin-top:.5rem">
+        <button class="btn btn-primary btn-lg" type="submit">✅ Add Product</button>
+        <a href="{{ url_for('farmer_products') }}" class="btn btn-outline btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

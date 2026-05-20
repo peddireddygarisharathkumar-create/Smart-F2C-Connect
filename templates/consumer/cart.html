@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}My Cart{% endblock %}
+
+{% block content %}
+<div class="section" style="padding-top:2rem">
+  <div class="container">
+    <h1 style="margin-bottom:1.5rem">🛒 My Cart</h1>
+
+    {% if items %}
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start">
+
+      <!-- Cart Items -->
+      <div class="card card-body">
+        {% for item in items %}
+        <div class="cart-item">
+          <img src="{{ url_for('static', filename='uploads/' + (item.image or 'default_product.jpg')) }}"
+               alt="{{ item.name }}"
+               onerror="this.src='https://images.unsplash.com/photo-1518977956812-cd3dbadaaf31?w=400&q=80'">
+          <div class="cart-item-info" style="flex:1">
+            <div class="cart-item-name">{{ item.name }}</div>
+            <div class="cart-item-farm">🌾 {{ item.farm_name }}</div>
+            <div style="font-size:.82rem;color:var(--text-light)">₹{{ '%.2f'|format(item.price) }} / {{ item.unit }}</div>
+            <!-- Qty update form -->
+            <form action="{{ url_for('update_cart') }}" method="POST" style="margin-top:.5rem" class="qty-control-wrap">
+              <input type="hidden" name="product_id" value="{{ item.id }}">
+              <div style="display:flex;align-items:center;gap:.5rem">
+                <button type="button" class="cart-qty-btn qty-dec">−</button>
+                <span class="qty-display" style="font-weight:600;min-width:24px;text-align:center">{{ item.cart_qty }}</span>
+                <button type="button" class="cart-qty-btn qty-inc">+</button>
+                <input type="hidden" name="quantity" value="{{ item.cart_qty }}" data-max="{{ item.quantity }}">
+                <button class="btn btn-outline btn-sm" type="submit">Update</button>
+              </div>
+            </form>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div class="cart-item-price">₹{{ '%.2f'|format(item.subtotal) }}</div>
+            <a href="{{ url_for('remove_from_cart', pid=item.id) }}"
+               class="btn btn-danger btn-sm mt-2"
+               data-confirm="Remove from cart?">🗑</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Summary -->
+      <div class="cart-summary">
+        <h3 style="margin-bottom:1rem">Order Summary</h3>
+        <div class="summary-row"><span>Subtotal</span><span>₹{{ '%.2f'|format(total) }}</span></div>
+        <div class="summary-row"><span>Delivery</span><span style="color:var(--green-mid)">FREE</span></div>
+        <div class="summary-row"><span><strong>Total</strong></span><span><strong>₹{{ '%.2f'|format(total) }}</strong></span></div>
+        {% if session.get('role') == 'consumer' %}
+        <a href="{{ url_for('checkout') }}" class="btn btn-primary btn-full btn-lg mt-3">Proceed to Checkout →</a>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary btn-full btn-lg mt-3">Login to Checkout</a>
+        {% endif %}
+        <a href="{{ url_for('consumer_products') }}" class="btn btn-outline btn-full mt-2">← Continue Shopping</a>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="card card-body text-center" style="padding:4rem">
+      <div style="font-size:5rem;margin-bottom:1rem">🛒</div>
+      <h2>Your cart is empty</h2>
+      <p class="text-muted mt-2">Discover fresh produce from local farmers.</p>
+      <a href="{{ url_for('consumer_products') }}" class="btn btn-primary btn-lg mt-3">Browse Products</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

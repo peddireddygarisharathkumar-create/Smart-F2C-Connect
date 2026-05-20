@@ -1,0 +1,89 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Manage Users{% endblock %}
+
+{% block sidebar %}
+<ul class="sidebar-nav">
+  <li><a href="{{ url_for('admin_dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a></li>
+  <li><a href="{{ url_for('admin_users') }}"><span class="nav-icon">👥</span> Users</a></li>
+  <li><a href="{{ url_for('admin_products') }}"><span class="nav-icon">🌾</span> Products</a></li>
+  <li><a href="{{ url_for('admin_orders') }}"><span class="nav-icon">📦</span> Orders</a></li>
+  <li><a href="{{ url_for('admin_reports') }}"><span class="nav-icon">📈</span> Reports</a></li>
+  <li><a href="{{ url_for('logout') }}"><span class="nav-icon">🚪</span> Logout</a></li>
+</ul>
+{% endblock %}
+
+{% block main %}
+<div class="page-header">
+  <h1>User Management</h1>
+  <p>{{ farmers|length }} farmers · {{ consumers|length }} consumers registered</p>
+</div>
+
+<!-- Tab Toggle -->
+<div style="display:flex;gap:.5rem;margin-bottom:1.5rem">
+  <button onclick="showTab('farmers')"  id="tab-farmers"  class="btn btn-primary">🌾 Farmers ({{ farmers|length }})</button>
+  <button onclick="showTab('consumers')" id="tab-consumers" class="btn btn-outline">🛒 Consumers ({{ consumers|length }})</button>
+</div>
+
+<!-- Farmers Table -->
+<div id="section-farmers">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for f in farmers %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ f.name }}</td>
+          <td>{{ f.email }}</td>
+          <td>{{ f.phone }}</td>
+          <td>{{ f.created_at.strftime('%d %b %Y') }}</td>
+          <td>
+            <form action="{{ url_for('admin_delete_user', role='farmer', uid=f.id) }}" method="POST">
+              <button class="btn btn-danger btn-sm" type="submit" data-confirm="Delete farmer {{ f.name }}? This cannot be undone.">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted" style="padding:2rem">No farmers registered yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Consumers Table -->
+<div id="section-consumers" style="display:none">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for c in consumers %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ c.name }}</td>
+          <td>{{ c.email }}</td>
+          <td>{{ c.phone }}</td>
+          <td>{{ c.created_at.strftime('%d %b %Y') }}</td>
+          <td>
+            <form action="{{ url_for('admin_delete_user', role='consumer', uid=c.id) }}" method="POST">
+              <button class="btn btn-danger btn-sm" type="submit" data-confirm="Delete consumer {{ c.name }}?">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted" style="padding:2rem">No consumers registered yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function showTab(tab) {
+  ['farmers','consumers'].forEach(t => {
+    document.getElementById('section-'+t).style.display = t===tab?'':'none';
+    document.getElementById('tab-'+t).className = t===tab?'btn btn-primary':'btn btn-outline';
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="section" style="padding-top:2rem">
+  <div class="container">
+    <h1 style="margin-bottom:1.5rem">🧾 Checkout</h1>
+
+    <div style="display:grid;grid-template-columns:1fr 360px;gap:1.5rem;align-items:start">
+
+      <!-- Checkout Form -->
+      <form action="{{ url_for('checkout') }}" method="POST">
+        <!-- Delivery Address -->
+        <div class="card card-body mb-3">
+          <h3 style="margin-bottom:1rem">📍 Delivery Address</h3>
+          <div class="form-group">
+            <label class="form-label">Full Delivery Address *</label>
+            <textarea class="form-control" name="address" rows="3" required placeholder="House No, Street, City, State, PIN">{{ consumer.address or '' }}</textarea>
+          </div>
+        </div>
+
+        <!-- Payment Mode -->
+        <div class="card card-body mb-3">
+          <h3 style="margin-bottom:1rem">💳 Payment Method</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+            {% for mode, icon, label in [('cod','💵','Cash on Delivery'),('upi','📱','UPI Payment'),('card','💳','Credit/Debit Card'),('netbanking','🏦','Net Banking')] %}
+            <label style="cursor:pointer;border:2px solid #e4ebe6;border-radius:var(--radius-md);padding:1rem;display:flex;align-items:center;gap:.7rem;transition:.2s" class="payment-option">
+              <input type="radio" name="payment_mode" value="{{ mode }}" {{ 'checked' if mode == 'cod' }} style="accent-color:var(--green-mid)">
+              <span style="font-size:1.4rem">{{ icon }}</span>
+              <span style="font-size:.88rem;font-weight:600">{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          <div class="alert alert-info mt-3" style="font-size:.82rem">
+            ℹ️ UPI, Card, and Net Banking are demo modes. Full integration coming in v2.
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-lg btn-full" type="submit">✅ Place Order</button>
+      </form>
+
+      <!-- Order Summary -->
+      <div>
+        <div class="cart-summary">
+          <h3 style="margin-bottom:1rem">Order Summary</h3>
+          {% for item in items %}
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #edf2ef;font-size:.87rem">
+            <div>
+              <div style="font-weight:600">{{ item.name }}</div>
+              <div style="color:var(--text-light)">{{ item.cart_qty }} × ₹{{ '%.2f'|format(item.price) }}</div>
+            </div>
+            <div style="font-weight:600">₹{{ '%.2f'|format(item.subtotal) }}</div>
+          </div>
+          {% endfor %}
+          <div class="summary-row" style="margin-top:.5rem"><span>Subtotal</span><span>₹{{ '%.2f'|format(total) }}</span></div>
+          <div class="summary-row"><span>Delivery</span><span style="color:var(--green-mid)">FREE</span></div>
+          <div class="summary-row"><span><strong>Total</strong></span><span><strong>₹{{ '%.2f'|format(total) }}</strong></span></div>
+        </div>
+        <a href="{{ url_for('view_cart') }}" class="btn btn-outline btn-full mt-2">← Edit Cart</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.payment-option:has(input:checked){ border-color:var(--green-mid); background:var(--green-pale); }
+</style>
+{% endblock %}

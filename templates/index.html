@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ──────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content animate-fade-up" style="margin: 0 auto; text-align: center;">
+      <p class="chip" style="margin-bottom:.8rem">🌾 Direct Farm to Table</p>
+      <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.2; margin-bottom: 1.5rem;">
+        <span style="background: var(--amber); color: var(--green-dark); padding: 0.2em 0.5em; border-radius: var(--radius-md); display: inline-block; box-shadow: var(--shadow-md);">SMART F2C CONNECT</span>
+      </h1>
+      <p>Fresh Produce, No Middlemen — linking farmers directly with consumers, ensuring fair prices for producers and fresh, affordable food for families.</p>
+      <div class="hero-cta" style="justify-content: center;">
+        <a href="{{ url_for('consumer_products') }}" class="btn btn-secondary btn-lg">🛒 Shop Now</a>
+        <a href="{{ url_for('register') }}" class="btn btn-outline btn-lg" style="color:white;border-color:rgba(255,255,255,.5)">Join as Farmer</a>
+      </div>
+      <div class="hero-stats" style="justify-content: center;">
+        <div>
+          <div class="hero-stat-num">{{ farmers_count }}+</div>
+          <div class="hero-stat-lbl">Active Farmers</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">{{ consumers_count }}+</div>
+          <div class="hero-stat-lbl">Happy Consumers</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">{{ products_count }}+</div>
+          <div class="hero-stat-lbl">Fresh Products</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How it Works ───────────────────────────────────────── -->
+<section class="section" style="background:var(--white)">
+  <div class="container">
+    <div class="section-title">
+      <h2>How It Works</h2>
+      <div class="section-divider"></div>
+      <p>Three simple steps to get farm-fresh produce delivered to your door.</p>
+    </div>
+    <div class="grid grid-3" style="margin-top:2.5rem">
+      {% for step in [
+        ('🌱','Farmers List Products','Farmers register and upload their fresh produce with prices, quantities, and photos.'),
+        ('🔍','Consumers Browse & Order','Consumers search, filter, and order directly without any middlemen.'),
+        ('🚚','Direct Delivery','Orders reach consumers fresh from the source — fair price, zero markup.'),
+      ] %}
+      <div class="card card-body text-center animate-on-scroll" style="--delay:{{ loop.index0 * 0.1 }}s">
+        <div style="font-size:3rem;margin-bottom:1rem">{{ step[0] }}</div>
+        <h3 style="margin-bottom:.5rem">{{ step[1] }}</h3>
+        <p>{{ step[2] }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── Featured Products ──────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="section-title">
+      <h2>Fresh From the Farm</h2>
+      <div class="section-divider"></div>
+      <p>Directly sourced produce from trusted local farmers.</p>
+    </div>
+    {% if products %}
+    <div class="grid grid-4">
+      {% for p in products %}
+      <div class="card product-card animate-on-scroll">
+        <div class="card-img-wrap">
+          <img src="{{ url_for('static', filename='uploads/' + (p.image or 'default_product.jpg')) }}"
+               alt="{{ p.name }}"
+               onerror="this.src='https://images.unsplash.com/photo-1518977956812-cd3dbadaaf31?w=400&q=80'">
+          <span class="badge-cat">{{ p.category }}</span>
+        </div>
+        <div class="card-body">
+          <div class="product-title">{{ p.name }}</div>
+          <div class="farm-label">🌾 {{ p.farm_name }}</div>
+          <div class="price-row">
+            <span class="price">₹{{ '%.2f'|format(p.price) }}</span>
+            <span class="unit">/{{ p.unit }}</span>
+            <span class="qty-badge">{{ p.quantity }} {{ p.unit }} left</span>
+          </div>
+          {% if session.get('role') == 'consumer' %}
+          <form action="{{ url_for('add_to_cart', pid=p.id) }}" method="POST" style="margin-top:.7rem">
+            <input type="hidden" name="quantity" value="1">
+            <button class="btn btn-primary btn-sm btn-full" type="submit">🛒 Add to Cart</button>
+          </form>
+          {% else %}
+          <a href="{{ url_for('consumer_products') }}" class="btn btn-outline btn-sm btn-full" style="margin-top:.7rem">View Details</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+      <a href="{{ url_for('consumer_products') }}" class="btn btn-primary btn-lg">View All Products →</a>
+    </div>
+    {% else %}
+    <p class="text-center text-muted">No products available yet.</p>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ── Benefits ───────────────────────────────────────────── -->
+<section class="section" style="background:var(--green-dark)">
+  <div class="container">
+    <div class="section-title">
+      <h2 style="color:white">Why Choose Smart F2C?</h2>
+      <div class="section-divider"></div>
+    </div>
+    <div class="grid grid-4" style="margin-top:2rem">
+      {% for b in [
+        ('🌿','100% Organic','Certified natural produce, free from harmful pesticides.'),
+        ('💰','Best Prices','No middlemen means better margins for farmers and savings for you.'),
+        ('⚡','Same-Day Fresh','Produce harvested the same day it is dispatched.'),
+        ('🔒','Secure Payments','OTP-verified accounts with multiple secure payment modes.'),
+      ] %}
+      <div style="text-align:center;color:white;padding:1rem">
+        <div style="font-size:2.5rem;margin-bottom:.7rem">{{ b[0] }}</div>
+        <h3 style="color:white;font-size:1rem;margin-bottom:.4rem">{{ b[1] }}</h3>
+        <p style="color:rgba(255,255,255,.7);font-size:.85rem">{{ b[2] }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA Banner ─────────────────────────────────────────── -->
+<section class="section" style="background:var(--amber-light)">
+  <div class="container text-center">
+    <h2>Ready to Get Started?</h2>
+    <p style="margin:.75rem 0 1.5rem">Join thousands of farmers and consumers building a better food ecosystem.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Register as Farmer</a>
+      <a href="{{ url_for('register') }}" class="btn btn-secondary btn-lg">Register as Consumer</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

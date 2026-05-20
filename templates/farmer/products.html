@@ -1,0 +1,62 @@
+{% extends "dashboard_base.html" %}
+{% block title %}My Products{% endblock %}
+
+{% block sidebar %}
+<ul class="sidebar-nav">
+  <li><a href="{{ url_for('farmer_dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a></li>
+  <li><a href="{{ url_for('farmer_products') }}"><span class="nav-icon">🌾</span> My Products</a></li>
+  <li><a href="{{ url_for('farmer_add_product') }}"><span class="nav-icon">➕</span> Add Product</a></li>
+  <li><a href="{{ url_for('farmer_orders') }}"><span class="nav-icon">📦</span> Orders</a></li>
+  <li><a href="{{ url_for('logout') }}"><span class="nav-icon">🚪</span> Logout</a></li>
+</ul>
+{% endblock %}
+
+{% block main %}
+<div class="page-header">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem">
+    <div>
+      <div class="breadcrumb"><a href="{{ url_for('farmer_dashboard') }}">Dashboard</a> / My Products</div>
+      <h1>My Products</h1>
+    </div>
+    <a href="{{ url_for('farmer_add_product') }}" class="btn btn-primary">➕ Add New Product</a>
+  </div>
+</div>
+
+{% if products %}
+<div class="grid grid-3">
+  {% for p in products %}
+  <div class="card product-card">
+    <div class="card-img-wrap">
+      <img src="{{ url_for('static', filename='uploads/' + (p.image or 'default_product.jpg')) }}"
+           alt="{{ p.name }}"
+           onerror="this.src='https://images.unsplash.com/photo-1518977956812-cd3dbadaaf31?w=400&q=80'">
+      <span class="badge-cat">{{ p.category }}</span>
+      <span class="status-badge status-{{ p.status }}" style="position:absolute;top:.7rem;right:.7rem">{{ p.status }}</span>
+    </div>
+    <div class="card-body">
+      <div class="product-title">{{ p.name }}</div>
+      <div class="farm-label" style="font-size:.82rem;color:var(--text-light)">{{ p.description[:60] ~ '...' if p.description and p.description|length > 60 else p.description }}</div>
+      <div class="price-row">
+        <span class="price">₹{{ '%.2f'|format(p.price) }}</span>
+        <span class="unit">/{{ p.unit }}</span>
+        <span class="qty-badge">{{ p.quantity }} left</span>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:.8rem">
+        <a href="{{ url_for('farmer_edit_product', pid=p.id) }}" class="btn btn-outline btn-sm" style="flex:1;justify-content:center">✏️ Edit</a>
+        <form action="{{ url_for('farmer_delete_product', pid=p.id) }}" method="POST" style="flex:1">
+          <button class="btn btn-danger btn-sm btn-full" type="submit" data-confirm="Delete this product?">🗑 Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card card-body text-center" style="padding:3rem">
+  <div style="font-size:4rem;margin-bottom:1rem">🌾</div>
+  <h3>No products yet</h3>
+  <p class="text-muted mt-2">Add your first product to start selling!</p>
+  <a href="{{ url_for('farmer_add_product') }}" class="btn btn-primary mt-3">➕ Add Product</a>
+</div>
+{% endif %}
+{% endblock %}

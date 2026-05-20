@@ -1,0 +1,56 @@
+{% extends "dashboard_base.html" %}
+{% block title %}My Orders{% endblock %}
+
+{% block sidebar %}
+<ul class="sidebar-nav">
+  <li><a href="{{ url_for('consumer_dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a></li>
+  <li><a href="{{ url_for('consumer_products') }}"><span class="nav-icon">🛍</span> Browse Products</a></li>
+  <li><a href="{{ url_for('view_cart') }}"><span class="nav-icon">🛒</span> My Cart</a></li>
+  <li><a href="{{ url_for('consumer_orders') }}"><span class="nav-icon">📦</span> My Orders</a></li>
+  <li><a href="{{ url_for('logout') }}"><span class="nav-icon">🚪</span> Logout</a></li>
+</ul>
+{% endblock %}
+
+{% block main %}
+<div class="page-header">
+  <h1>My Orders</h1>
+  <p>Track all your purchases from Smart F2C Connect.</p>
+</div>
+
+{% if orders %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Order #</th><th>Date</th><th>Items</th><th>Amount</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td><strong>#{{ o.id }}</strong></td>
+        <td>{{ o.created_at.strftime('%d %b %Y') }}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.items }}</td>
+        <td>₹{{ '%.2f'|format(o.total_amount) }}</td>
+        <td class="chip" style="text-transform:uppercase;font-size:.72rem">{{ o.payment_mode }}</td>
+        <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
+        <td>
+          <div style="display:flex;gap:.4rem">
+            <a href="{{ url_for('consumer_order_detail', oid=o.id) }}" class="btn btn-sm btn-outline">View</a>
+            {% if o.status == 'pending' %}
+            <form action="{{ url_for('cancel_order', oid=o.id) }}" method="POST">
+              <button class="btn btn-sm btn-danger" type="submit" data-confirm="Cancel this order?">Cancel</button>
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card card-body text-center" style="padding:3rem">
+  <div style="font-size:4rem;margin-bottom:1rem">📦</div>
+  <h3>No orders yet</h3>
+  <p class="text-muted mt-2">Browse fresh products from local farmers!</p>
+  <a href="{{ url_for('consumer_products') }}" class="btn btn-primary mt-3">Shop Now</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "dashboard_base.html" %}
+{% block title %}All Orders{% endblock %}
+
+{% block sidebar %}
+<ul class="sidebar-nav">
+  <li><a href="{{ url_for('admin_dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a></li>
+  <li><a href="{{ url_for('admin_users') }}"><span class="nav-icon">👥</span> Users</a></li>
+  <li><a href="{{ url_for('admin_products') }}"><span class="nav-icon">🌾</span> Products</a></li>
+  <li><a href="{{ url_for('admin_orders') }}"><span class="nav-icon">📦</span> Orders</a></li>
+  <li><a href="{{ url_for('admin_reports') }}"><span class="nav-icon">📈</span> Reports</a></li>
+  <li><a href="{{ url_for('logout') }}"><span class="nav-icon">🚪</span> Logout</a></li>
+</ul>
+{% endblock %}
+
+{% block main %}
+<div class="page-header">
+  <h1>All Orders</h1>
+  <p>{{ orders|length }} orders placed on the platform.</p>
+</div>
+
+<!-- Status filter -->
+<div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap" id="statusFilters">
+  <button class="btn btn-primary btn-sm" onclick="filterOrders('')">All</button>
+  {% for s in ['pending','confirmed','processing','shipped','delivered','cancelled'] %}
+  <button class="btn btn-outline btn-sm" onclick="filterOrders('{{ s }}')">{{ s|title }}</button>
+  {% endfor %}
+</div>
+
+<div class="table-wrap">
+  <table id="ordersTable">
+    <thead>
+      <tr><th>#</th><th>Consumer</th><th>Phone</th><th>Amount</th><th>Payment</th><th>Status</th><th>Date</th><th>Detail</th></tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr data-status="{{ o.status }}">
+        <td><strong>#{{ o.id }}</strong></td>
+        <td>{{ o.consumer_name }}</td>
+        <td>{{ o.consumer_phone }}</td>
+        <td>₹{{ '%.2f'|format(o.total_amount) }}</td>
+        <td><span class="chip" style="text-transform:uppercase;font-size:.72rem">{{ o.payment_mode }}</span></td>
+        <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
+        <td>{{ o.created_at.strftime('%d %b %Y') }}</td>
+        <td><a href="{{ url_for('admin_order_detail', oid=o.id) }}" class="btn btn-sm btn-outline">View</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" class="text-center text-muted" style="padding:2rem">No orders yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+function filterOrders(status) {
+  document.querySelectorAll('#statusFilters button').forEach(b => b.className='btn btn-outline btn-sm');
+  event.target.className='btn btn-primary btn-sm';
+  document.querySelectorAll('#ordersTable tbody tr').forEach(row => {
+    row.style.display = (!status || row.dataset.status===status) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

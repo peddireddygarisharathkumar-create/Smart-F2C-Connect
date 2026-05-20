@@ -1,0 +1,95 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block sidebar %}
+<ul class="sidebar-nav">
+  <li class="nav-section">Overview</li>
+  <li><a href="{{ url_for('admin_dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a></li>
+  <li class="nav-section">Manage</li>
+  <li><a href="{{ url_for('admin_users') }}"><span class="nav-icon">👥</span> Users</a></li>
+  <li><a href="{{ url_for('admin_products') }}"><span class="nav-icon">🌾</span> Products</a></li>
+  <li><a href="{{ url_for('admin_orders') }}"><span class="nav-icon">📦</span> Orders</a></li>
+  <li class="nav-section">Reports</li>
+  <li><a href="{{ url_for('admin_reports') }}"><span class="nav-icon">📈</span> Reports</a></li>
+  <li class="nav-section">Account</li>
+  <li><a href="{{ url_for('logout') }}"><span class="nav-icon">🚪</span> Logout</a></li>
+</ul>
+{% endblock %}
+
+{% block main %}
+<div class="page-header">
+  <h1>Admin Dashboard</h1>
+  <p>Overview of the Smart F2C Connect platform</p>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-stats mb-4">
+  <div class="stat-card"><div class="stat-icon green">🌾</div><div><div class="stat-value">{{ fc }}</div><div class="stat-label">Registered Farmers</div></div></div>
+  <div class="stat-card"><div class="stat-icon amber">🛒</div><div><div class="stat-value">{{ cc }}</div><div class="stat-label">Consumers</div></div></div>
+  <div class="stat-card"><div class="stat-icon earth">🌿</div><div><div class="stat-value">{{ pc }}</div><div class="stat-label">Active Products</div></div></div>
+  <div class="stat-card"><div class="stat-icon info">📦</div><div><div class="stat-value">{{ oc }}</div><div class="stat-label">Total Orders</div></div></div>
+  <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-value">₹{{ '%.0f'|format(rev) }}</div><div class="stat-label">Total Revenue</div></div></div>
+</div>
+
+<!-- Charts Row -->
+<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+  <div class="card card-body">
+    <h3 style="margin-bottom:1rem">Category Distribution</h3>
+    <canvas id="catChart" height="220"></canvas>
+  </div>
+  <div class="card card-body">
+    <h3 style="margin-bottom:1rem">Platform Summary</h3>
+    <canvas id="summaryChart" height="220"></canvas>
+  </div>
+</div>
+
+<!-- Recent Orders -->
+<div class="card card-body">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+    <h3>Recent Orders</h3>
+    <a href="{{ url_for('admin_orders') }}" class="btn btn-sm btn-outline">View All</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Consumer</th><th>Amount</th><th>Payment</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for o in recent_orders %}
+        <tr>
+          <td><strong>#{{ o.id }}</strong></td>
+          <td>{{ o.consumer_name }}</td>
+          <td>₹{{ '%.2f'|format(o.total_amount) }}</td>
+          <td class="chip" style="text-transform:uppercase;font-size:.72rem">{{ o.payment_mode }}</td>
+          <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
+          <td>{{ o.created_at.strftime('%d %b %Y') }}</td>
+          <td><a href="{{ url_for('admin_order_detail', oid=o.id) }}" class="btn btn-sm btn-outline">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const catLabels = {{ cat_data | map(attribute='category') | list | tojson }};
+const catValues = {{ cat_data | map(attribute='cnt') | list | tojson }};
+const colors = ['#2d6a4f','#52b788','#e9a825','#7c5c2e','#0077b6','#d62828','#6d28d9','#047857'];
+
+new Chart(document.getElementById('catChart'), {
+  type: 'doughnut',
+  data: { labels: catLabels, datasets:[{ data: catValues, backgroundColor: colors, borderWidth:2, borderColor:'#fff' }] },
+  options: { plugins:{ legend:{ position:'right', labels:{ font:{ family:'DM Sans', size:12 } } } }, cutout:'60%' }
+});
+
+new Chart(document.getElementById('summaryChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Farmers','Consumers','Products','Orders'],
+    datasets:[{ data:[{{ fc }},{{ cc }},{{ pc }},{{ oc }}], backgroundColor:['#2d6a4f','#52b788','#e9a825','#0077b6'], borderRadius:8, borderSkipped:false }]
+  },
+  options: { plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, grid:{ color:'#edf2ef' } }, x:{ grid:{ display:false } } } }
+});
+</script>
+{% endblock %}

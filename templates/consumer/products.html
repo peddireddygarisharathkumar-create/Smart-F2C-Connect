@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Browse Products{% endblock %}
+
+{% block content %}
+<div class="section" style="padding-top:2rem">
+  <div class="container">
+    <h1 style="margin-bottom:1.5rem">🌾 Fresh Products</h1>
+
+    <!-- Filter Bar -->
+    <form method="GET" action="{{ url_for('consumer_products') }}" id="filterForm">
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="form-control" type="text" name="search" id="productSearch"
+                 placeholder="Search products…" value="{{ search }}">
+        </div>
+
+        <select class="form-control form-select" name="category" style="width:auto;min-width:150px" onchange="this.form.submit()">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+          <option {{ 'selected' if cat == selected_category }}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+
+        <select class="form-control form-select" name="sort" style="width:auto;min-width:140px" onchange="this.form.submit()">
+          <option value="newest"     {{ 'selected' if sort=='newest' }}>Newest First</option>
+          <option value="price_asc"  {{ 'selected' if sort=='price_asc' }}>Price: Low–High</option>
+          <option value="price_desc" {{ 'selected' if sort=='price_desc' }}>Price: High–Low</option>
+        </select>
+
+        {% if search or selected_category %}
+        <a href="{{ url_for('consumer_products') }}" class="btn btn-outline btn-sm">✕ Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% if products %}
+    <p class="text-muted" style="margin-bottom:1rem">{{ products|length }} product{{ 's' if products|length != 1 }} found</p>
+    <div class="grid grid-4">
+      {% for p in products %}
+      <div class="card product-card">
+        <div class="card-img-wrap">
+          <img src="{{ url_for('static', filename='uploads/' + (p.image or 'default_product.jpg')) }}"
+               alt="{{ p.name }}"
+               onerror="this.src='https://images.unsplash.com/photo-1518977956812-cd3dbadaaf31?w=400&q=80'">
+          <span class="badge-cat">{{ p.category }}</span>
+        </div>
+        <div class="card-body">
+          <div class="product-title">{{ p.name }}</div>
+          <div class="farm-label">🌾 {{ p.farm_name }} · {{ p.location }}</div>
+          {% if p.description %}
+          <div style="font-size:.8rem;color:var(--text-light);margin:.3rem 0">{{ p.description[:70] ~ '…' if p.description|length > 70 else p.description }}</div>
+          {% endif %}
+          <div class="price-row">
+            <span class="price">₹{{ '%.2f'|format(p.price) }}</span>
+            <span class="unit">/{{ p.unit }}</span>
+            <span class="qty-badge">{{ p.quantity }} left</span>
+          </div>
+
+          {% if session.get('role') == 'consumer' %}
+          <form action="{{ url_for('add_to_cart', pid=p.id) }}" method="POST" style="margin-top:.7rem">
+            <div style="display:flex;gap:.4rem;align-items:center" class="qty-control-wrap">
+              <button type="button" class="cart-qty-btn qty-dec">−</button>
+              <span class="qty-display" style="font-weight:600;min-width:24px;text-align:center">1</span>
+              <button type="button" class="cart-qty-btn qty-inc">+</button>
+              <input type="hidden" name="quantity" value="1" data-max="{{ p.quantity }}">
+              <button class="btn btn-primary btn-sm" type="submit" style="flex:1">🛒 Add</button>
+            </div>
+          </form>
+          {% elif session.get('role') %}
+          <div class="chip mt-2" style="font-size:.75rem">Login as consumer to buy</div>
+          {% else %}
+          <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm btn-full mt-2">Login to Buy</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card card-body text-center" style="padding:3rem">
+      <div style="font-size:4rem;margin-bottom:1rem">🔍</div>
+      <h3>No products found</h3>
+      <p class="text-muted mt-2">Try adjusting your search or filters.</p>
+      <a href="{{ url_for('consumer_products') }}" class="btn btn-outline mt-3">Clear Filters</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

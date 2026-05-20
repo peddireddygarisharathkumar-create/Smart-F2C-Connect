@@ -1,0 +1,57 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Customer Orders{% endblock %}
+{% block sidebar %}
+<ul class="sidebar-nav">
+  <li><a href="{{ url_for('farmer_dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a></li>
+  <li><a href="{{ url_for('farmer_products') }}"><span class="nav-icon">🌾</span> My Products</a></li>
+  <li><a href="{{ url_for('farmer_add_product') }}"><span class="nav-icon">➕</span> Add Product</a></li>
+  <li><a href="{{ url_for('farmer_orders') }}"><span class="nav-icon">📦</span> Orders</a></li>
+  <li><a href="{{ url_for('logout') }}"><span class="nav-icon">🚪</span> Logout</a></li>
+</ul>
+{% endblock %}
+{% block main %}
+<div class="page-header">
+  <h1>Customer Orders</h1>
+  <p>Manage and fulfil your customer orders.</p>
+</div>
+
+{% if orders %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Order #</th><th>Date</th><th>Customer</th><th>Phone</th><th>Product</th><th>Qty</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td><strong>#{{ o.id }}</strong></td>
+        <td>{{ o.created_at.strftime('%d %b %Y') }}</td>
+        <td>{{ o.consumer_name }}</td>
+        <td>{{ o.phone }}</td>
+        <td>{{ o.product_name }}</td>
+        <td>{{ o.quantity }} {{ o.unit }}</td>
+        <td>₹{{ '%.2f'|format(o.price * o.quantity) }}</td>
+        <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
+        <td>
+          <form action="{{ url_for('farmer_update_order', oid=o.id) }}" method="POST" style="display:flex;gap:.3rem">
+            <select class="form-control form-select" name="status" style="font-size:.78rem;padding:.3rem .5rem;width:120px">
+              {% for s in ['pending','confirmed','processing','shipped','delivered','cancelled'] %}
+              <option {{ 'selected' if s == o.status }}>{{ s }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-primary btn-sm" type="submit">Update</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card card-body text-center" style="padding:3rem">
+  <div style="font-size:4rem;margin-bottom:1rem">📦</div>
+  <h3>No orders yet</h3>
+  <p class="text-muted mt-2">Orders will appear here once consumers purchase your products.</p>
+</div>
+{% endif %}
+{% endblock %}

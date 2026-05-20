@@ -1,0 +1,54 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Manage Products{% endblock %}
+
+{% block sidebar %}
+<ul class="sidebar-nav">
+  <li><a href="{{ url_for('admin_dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a></li>
+  <li><a href="{{ url_for('admin_users') }}"><span class="nav-icon">👥</span> Users</a></li>
+  <li><a href="{{ url_for('admin_products') }}"><span class="nav-icon">🌾</span> Products</a></li>
+  <li><a href="{{ url_for('admin_orders') }}"><span class="nav-icon">📦</span> Orders</a></li>
+  <li><a href="{{ url_for('admin_reports') }}"><span class="nav-icon">📈</span> Reports</a></li>
+  <li><a href="{{ url_for('logout') }}"><span class="nav-icon">🚪</span> Logout</a></li>
+</ul>
+{% endblock %}
+
+{% block main %}
+<div class="page-header">
+  <h1>Manage Products</h1>
+  <p>{{ products|length }} total products across all farmers.</p>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Image</th><th>Product</th><th>Farmer</th><th>Category</th><th>Price</th><th>Qty</th><th>Status</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr>
+        <td>
+          <img src="{{ url_for('static', filename='uploads/' + (p.image or 'default_product.jpg')) }}"
+               style="width:48px;height:48px;border-radius:8px;object-fit:cover"
+               onerror="this.src='https://images.unsplash.com/photo-1518977956812-cd3dbadaaf31?w=80&q=80'">
+        </td>
+        <td><strong>{{ p.name }}</strong><br><span style="font-size:.78rem;color:var(--text-light)">{{ p.description[:40] ~ '…' if p.description and p.description|length > 40 else (p.description or '') }}</span></td>
+        <td>{{ p.farmer_name }}<br><span style="font-size:.78rem;color:var(--text-light)">{{ p.farm_name }}</span></td>
+        <td><span class="chip">{{ p.category }}</span></td>
+        <td>₹{{ '%.2f'|format(p.price) }}/{{ p.unit }}</td>
+        <td>{{ p.quantity }}</td>
+        <td><span class="status-badge status-{{ p.status }}">{{ p.status }}</span></td>
+        <td>
+          <form action="{{ url_for('admin_toggle_product', pid=p.id) }}" method="POST">
+            <button class="btn btn-sm {{ 'btn-danger' if p.status=='active' else 'btn-primary' }}" type="submit">
+              {{ '⏸ Deactivate' if p.status=='active' else '▶ Activate' }}
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" class="text-center text-muted" style="padding:2rem">No products found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

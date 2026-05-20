@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard{% endblock %} | SMART F2C CONNECT</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Top Navbar ──────────────────────────────────────────── -->
+<nav class="navbar">
+  <div class="container" style="max-width:100%;padding:0 1.25rem">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button class="hamburger" id="sidebarToggle" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="{{ url_for('index') }}" class="navbar-brand">
+        <span class="brand-icon">🌿</span><span>SMART F2C CONNECT</span>
+      </a>
+    </div>
+
+    <ul class="nav-links" id="navLinks" style="gap:.5rem">
+      <li style="color:rgba(255,255,255,.6);font-size:.85rem">
+        {% if session.get('role') == 'farmer' %}🌾{% elif session.get('role') == 'admin' %}🔑{% else %}🛒{% endif %}
+        {{ session.get('user_name','') }}
+      </li>
+      {% if session.get('role') == 'consumer' %}
+      <li>
+        <a href="{{ url_for('view_cart') }}" style="color:rgba(255,255,255,.85)">
+          🛒 <span class="nav-badge" id="cartBadge" style="display:none">0</span>
+        </a>
+      </li>
+      {% endif %}
+      <li><a href="{{ url_for('logout') }}" class="btn-nav-cta">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ── Alerts ─────────────────────────────────────────────── -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div style="position:fixed;top:76px;right:1rem;z-index:9999;width:320px">
+      {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat if cat != 'message' else 'info' }}" data-auto-dismiss style="margin-bottom:.5rem;box-shadow:var(--shadow-md)">
+        <span>{{ '✓' if cat=='success' else ('✕' if cat=='danger' else 'ℹ') }}</span>
+        <span>{{ msg }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- ── Dashboard Layout ────────────────────────────────────── -->
+<div class="dashboard-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="role-badge">
+        {% if session.get('role') == 'farmer' %}🌾 Farmer{% elif session.get('role') == 'admin' %}🔑 Admin{% else %}🛒 Consumer{% endif %}
+      </div>
+      <div style="color:white;font-weight:600;margin-top:.5rem;font-size:.95rem">{{ session.get('user_name','') }}</div>
+    </div>
+
+    {% block sidebar %}{% endblock %}
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    {% block main %}{% endblock %}
+  </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

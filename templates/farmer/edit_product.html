@@ -1,0 +1,76 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Edit Product{% endblock %}
+{% block sidebar %}
+<ul class="sidebar-nav">
+  <li><a href="{{ url_for('farmer_dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a></li>
+  <li><a href="{{ url_for('farmer_products') }}"><span class="nav-icon">🌾</span> My Products</a></li>
+  <li><a href="{{ url_for('farmer_add_product') }}"><span class="nav-icon">➕</span> Add Product</a></li>
+  <li><a href="{{ url_for('farmer_orders') }}"><span class="nav-icon">📦</span> Orders</a></li>
+  <li><a href="{{ url_for('logout') }}"><span class="nav-icon">🚪</span> Logout</a></li>
+</ul>
+{% endblock %}
+
+{% block main %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('farmer_products') }}">Products</a> / Edit</div>
+  <h1>Edit: {{ product.name }}</h1>
+</div>
+<div style="max-width:700px">
+  <div class="card card-body">
+    <form action="{{ url_for('farmer_edit_product', pid=product.id) }}" method="POST" enctype="multipart/form-data">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Product Name</label>
+          <input class="form-control" type="text" name="name" value="{{ product.name }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-control form-select" name="category">
+            {% for cat in ['Vegetables','Fruits','Grains','Pulses','Spices','Dairy','Nuts','Herbs','Other'] %}
+            <option {{ 'selected' if cat == product.category }}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price (₹)</label>
+          <input class="form-control" type="number" name="price" step="0.01" value="{{ product.price }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input class="form-control" type="number" name="quantity" value="{{ product.quantity }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit</label>
+          <select class="form-control form-select" name="unit">
+            {% for u in ['kg','g','litre','piece','dozen','bunch','packet','quintal'] %}
+            <option {{ 'selected' if u == product.unit }}>{{ u }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-control form-select" name="status">
+            <option value="active"   {{ 'selected' if product.status=='active' }}>Active</option>
+            <option value="inactive" {{ 'selected' if product.status=='inactive' }}>Inactive</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" name="description" rows="3">{{ product.description }}</textarea>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Change Image (optional)</label>
+          <img src="{{ url_for('static', filename='uploads/' + (product.image or 'default_product.jpg')) }}"
+               id="imgPreview" style="display:block;max-height:140px;border-radius:var(--radius-md);margin-bottom:.6rem;object-fit:cover"
+               onerror="this.src='https://images.unsplash.com/photo-1518977956812-cd3dbadaaf31?w=400&q=80'">
+          <input class="form-control" type="file" name="image" id="productImage" accept="image/*">
+        </div>
+      </div>
+      <div style="display:flex;gap:1rem;margin-top:.5rem">
+        <button class="btn btn-primary btn-lg" type="submit">💾 Update Product</button>
+        <a href="{{ url_for('farmer_products') }}" class="btn btn-outline btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

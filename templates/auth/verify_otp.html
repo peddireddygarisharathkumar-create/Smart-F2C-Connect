@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}OTP Verification{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card animate-fade-up" style="max-width:420px">
+    <div class="auth-logo">
+      <div class="logo-icon">📱</div>
+      <h2>OTP Verification</h2>
+      <p>Enter the 6-digit code sent to your email.</p>
+    </div>
+
+    <form action="{{ url_for('verify_otp') }}" method="POST">
+      <div class="otp-inputs" id="otpWrap">
+        <input type="text" maxlength="1" pattern="\d" inputmode="numeric">
+        <input type="text" maxlength="1" pattern="\d" inputmode="numeric">
+        <input type="text" maxlength="1" pattern="\d" inputmode="numeric">
+        <input type="text" maxlength="1" pattern="\d" inputmode="numeric">
+        <input type="text" maxlength="1" pattern="\d" inputmode="numeric">
+        <input type="text" maxlength="1" pattern="\d" inputmode="numeric">
+      </div>
+      <input type="hidden" name="otp" id="otpHidden">
+
+      <button class="btn btn-primary btn-full btn-lg" type="submit" id="verifyBtn" disabled>Verify OTP →</button>
+    </form>
+
+    <div style="text-align:center;margin-top:1.2rem;font-size:.87rem;color:var(--text-light)">
+      Didn't receive the code?
+      <button id="resendBtn" onclick="resendOTP()" class="btn btn-outline btn-sm" style="margin-left:.5rem" type="button">Resend</button>
+    </div>
+
+    <div id="countdown" style="text-align:center;font-size:.82rem;color:var(--text-light);margin-top:.6rem"></div>
+
+    <div style="margin-top:1.5rem;background:var(--green-pale);border-radius:var(--radius-md);padding:.9rem;font-size:.82rem;color:var(--green-dark)">
+      💡 <strong>Dev Mode:</strong> Check your Flask server console for the OTP printed there.
+    </div>
+  </div>
+</div>
+
+<script>
+const otpInputs = document.querySelectorAll('.otp-inputs input');
+const verifyBtn = document.getElementById('verifyBtn');
+const otpHidden = document.getElementById('otpHidden');
+
+otpInputs.forEach(inp => {
+  inp.addEventListener('input', () => {
+    const val = [...otpInputs].map(i=>i.value).join('');
+    otpHidden.value = val;
+    verifyBtn.disabled = val.length < 6;
+  });
+});
+
+// Countdown timer
+let seconds = 60;
+const countdown = document.getElementById('countdown');
+const resendBtn = document.getElementById('resendBtn');
+resendBtn.disabled = true;
+const timer = setInterval(() => {
+  seconds--;
+  countdown.textContent = `Resend available in ${seconds}s`;
+  if (seconds <= 0) {
+    clearInterval(timer);
+    countdown.textContent = '';
+    resendBtn.disabled = false;
+  }
+}, 1000);
+
+function resendOTP() {
+  fetch('/api/resend-otp', {method:'POST'})
+    .then(r=>r.json())
+    .then(d => { showToast('OTP resent!'); resendBtn.disabled = true; });
+}
+</script>
+{% endblock %}

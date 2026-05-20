@@ -1,0 +1,110 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Reports{% endblock %}
+
+{% block sidebar %}
+<ul class="sidebar-nav">
+  <li><a href="{{ url_for('admin_dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a></li>
+  <li><a href="{{ url_for('admin_users') }}"><span class="nav-icon">👥</span> Users</a></li>
+  <li><a href="{{ url_for('admin_products') }}"><span class="nav-icon">🌾</span> Products</a></li>
+  <li><a href="{{ url_for('admin_orders') }}"><span class="nav-icon">📦</span> Orders</a></li>
+  <li><a href="{{ url_for('admin_reports') }}"><span class="nav-icon">📈</span> Reports</a></li>
+  <li><a href="{{ url_for('logout') }}"><span class="nav-icon">🚪</span> Logout</a></li>
+</ul>
+{% endblock %}
+
+{% block main %}
+<div class="page-header">
+  <h1>Platform Reports</h1>
+  <p>Analytics and performance metrics for Smart F2C Connect</p>
+</div>
+
+<!-- Monthly Revenue Chart -->
+<div class="card card-body mb-4">
+  <h3 style="margin-bottom:1rem">📈 Monthly Revenue (Last 12 Months)</h3>
+  <canvas id="revenueChart" height="100"></canvas>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+  <!-- Category Revenue -->
+  <div class="card card-body">
+    <h3 style="margin-bottom:1rem">🗂 Revenue by Category</h3>
+    <canvas id="catRevChart" height="200"></canvas>
+  </div>
+
+  <!-- Top Farmers -->
+  <div class="card card-body">
+    <h3 style="margin-bottom:1rem">🏆 Top Farmers by Revenue</h3>
+    {% if top_farmers %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Rank</th><th>Farmer</th><th>Orders</th><th>Revenue</th></tr></thead>
+        <tbody>
+          {% for f in top_farmers %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ f.name }}<br><span style="font-size:.75rem;color:var(--text-light)">{{ f.farm_name }}</span></td>
+            <td>{{ f.orders }}</td>
+            <td>₹{{ '%.2f'|format(f.revenue) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted text-center" style="padding:2rem">No revenue data yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Monthly Table -->
+<div class="card card-body">
+  <h3 style="margin-bottom:1rem">📅 Monthly Breakdown</h3>
+  {% if monthly %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Month</th><th>Completed Orders</th><th>Revenue</th></tr></thead>
+      <tbody>
+        {% for m in monthly %}
+        <tr>
+          <td>{{ m.month }}</td>
+          <td>{{ m.orders }}</td>
+          <td>₹{{ '%.2f'|format(m.revenue) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted text-center" style="padding:2rem">No delivery data yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const monthlyLabels  = {{ monthly | map(attribute='month') | list | tojson }};
+const monthlyOrders  = {{ monthly | map(attribute='orders') | list | tojson }};
+const monthlyRev     = {{ monthly | map(attribute='revenue') | list | tojson }};
+
+new Chart(document.getElementById('revenueChart'), {
+  type:'line',
+  data:{
+    labels: monthlyLabels,
+    datasets:[
+      { label:'Revenue (₹)', data:monthlyRev, borderColor:'#2d6a4f', backgroundColor:'rgba(45,106,79,.1)', tension:.4, fill:true },
+      { label:'Orders', data:monthlyOrders, borderColor:'#e9a825', backgroundColor:'rgba(233,168,37,.1)', tension:.4, fill:false, yAxisID:'y1' }
+    ]
+  },
+  options:{ scales:{ y:{ beginAtZero:true, position:'left', title:{ display:true, text:'Revenue (₹)' } }, y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false }, title:{ display:true, text:'Orders' } } }, plugins:{ legend:{ position:'top' } } }
+});
+
+const catLabels2 = {{ by_category | map(attribute='category') | list | tojson }};
+const catRev2    = {{ by_category | map(attribute='revenue') | list | tojson }};
+new Chart(document.getElementById('catRevChart'), {
+  type:'bar',
+  data:{ labels:catLabels2, datasets:[{ label:'Revenue', data:catRev2, backgroundColor:['#2d6a4f','#52b788','#e9a825','#7c5c2e','#0077b6','#d62828'], borderRadius:6 }] },
+  options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, grid:{ color:'#edf2ef' } }, x:{ grid:{ display:false } } } }
+});
+</script>
+{% endblock %}
